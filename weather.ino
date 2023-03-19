@@ -1,4 +1,6 @@
 #include <DHT.h>
+#include <ESP8266WiFi.h>
+#include "ThingSpeak.h"
 //analogpins
 #define DHT11_PIN A4
 #define DHTTYPE DHT11
@@ -8,35 +10,54 @@
 
 //digitalpins
 int buzzer = 9;
-
-
-void ReadDHT();
-void  Readrain();
-void  ReadAir();
-void  Readlight();
-
 DHT dht(DHT11_PIN, DHTTYPE);
 
 float h,t;
 int i,r;
+const char* ssid = "REPLACE_WITH_YOUR_SSID";   // your network SSID (name) 
+const char* password = "REPLACE_WITH_YOUR_PASSWORD";   // your network password
+WiFiClient  client;
+
+unsigned long myChannelNumber = 1;
+const char * myWriteAPIKey = "XXXXXXXXXXXXXXXX";
+
+// Timer variables
+unsigned long lastTime = 0;
+unsigned long timerDelay = 3000;
+
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(DHT11_PIN,INPUT);
   pinMode(mq2_pin, INPUT);
   pinMode(LDR, INPUT);
   pinMode(rain, INPUT);
   pinMode(buzzer, OUTPUT);
+  WiFi.mode(WIFI_STA);   
+  
+  ThingSpeak.begin(client);
   //tone(buzzer,361);
 }
 
 void loop()
 {
+  if ((millis() - lastTime) > timerDelay) {
+    
+    // Connect or reconnect to WiFi
+    if(WiFi.status() != WL_CONNECTED){
+      Serial.print("Attempting to connect");
+      while(WiFi.status() != WL_CONNECTED){
+        WiFi.begin(ssid, password); 
+        delay(5000);     
+      } 
+      Serial.println("\nConnected.");
+    }
   ReadDHT();
   ReadAir();
   Readlight();
   Readrain();
   delay(5000);
+  lastTime = millis();
 }
 
 void  ReadDHT(void)
@@ -44,6 +65,9 @@ void  ReadDHT(void)
   
   h = dht.readHumidity();
   t = dht.readTemperature();
+  int x = ThingSpeak.writeField(myChannelNumber, 1, t, myWriteAPIKey);
+  int x = ThingSpeak.writeField(myChannelNumber, 2, h, myWriteAPIKey);
+  
   if (isnan(h)|| isnan(t))
   {
     Serial.print("failed to read data from temp sensor");
@@ -62,6 +86,7 @@ else if (t>45){
       Serial.println(t);
       Serial.print("C");
       Serial.println("************************************");
+   
 }  
 else if (t<=45){
       Serial.print(h);
@@ -103,6 +128,7 @@ void ReadAir(void)
 void Readrain()
 {
  r = analogRead(rain);
+ int x = ThingSpeak.writeField(myChannelNumber, 3, r, myWriteAPIKey);
  if(r >= 900)
  {
    Serial.print("it is raining !!");
@@ -128,6 +154,7 @@ void Readlight(void)
  
   Serial.print("LIGHT :");
   Serial.print(analogRead(LDR));
+  int x = ThingSpeak.writeField(myChannelNumber, 4, analogRead(LDR), myWriteAPIKey);
   Serial.print("%");
   Serial.print("************************************");
   delay(200);
