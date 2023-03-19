@@ -52,6 +52,7 @@ void loop()
       } 
       Serial.println("\nConnected.");
     }
+  
   ReadDHT();
   ReadAir();
   Readlight();
@@ -65,8 +66,10 @@ void  ReadDHT(void)
   
   h = dht.readHumidity();
   t = dht.readTemperature();
-  int x = ThingSpeak.writeField(myChannelNumber, 1, t, myWriteAPIKey);
-  int x = ThingSpeak.writeField(myChannelNumber, 2, h, myWriteAPIKey);
+  ThingSpeak.setField(1, t);
+  ThingSpeak.setField(2, h);
+  int x = ThingSpeak.writeField(myChannelNumber, myWriteAPIKey);
+  int x = ThingSpeak.writeField(myChannelNumber, myWriteAPIKey);
   
   if (isnan(h)|| isnan(t))
   {
@@ -128,7 +131,8 @@ void ReadAir(void)
 void Readrain()
 {
  r = analogRead(rain);
- int x = ThingSpeak.writeField(myChannelNumber, 3, r, myWriteAPIKey);
+ ThingSpeak.setField(3, r);
+ int x = ThingSpeak.writeField(myChannelNumber, myWriteAPIKey);
  if(r >= 900)
  {
    Serial.print("it is raining !!");
@@ -154,7 +158,8 @@ void Readlight(void)
  
   Serial.print("LIGHT :");
   Serial.print(analogRead(LDR));
-  int x = ThingSpeak.writeField(myChannelNumber, 4, analogRead(LDR), myWriteAPIKey);
+  ThingSpeak.setField(4, analogRead(LDR));
+  int x = ThingSpeak.writeField(myChannelNumber, myWriteAPIKey);
   Serial.print("%");
   Serial.print("************************************");
   delay(200);
