@@ -1,6 +1,6 @@
-# Weather Monitoring System
+# Weather Monitoring and Prediction
 
-Weather monitoring station or weather monitoring system can help us to monitor the temperature and humidity by using a single sensor. 
+Weather monitoring  can help us to monitor the temperature and humidity by using a single sensor and predict the weather using ML tools.
 
 ## Sensors Used 
 
